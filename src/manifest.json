@@ -1,6 +1,6 @@
 {
-  "name": "Ionic",
-  "short_name": "Ionic",
+  "name": "Yes or No",
+  "short_name": "yes or no",
   "start_url": "index.html",
   "display": "standalone",
   "icons": [{

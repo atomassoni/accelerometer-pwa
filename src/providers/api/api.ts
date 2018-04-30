@@ -29,5 +29,15 @@ export class ApiProvider {
     return this.http.post(this.url, data, { responseType: 'text', params: params });
   }
 
+  streamIt(data: {}[], guid: string) {
+    const params = new HttpParams({
+      fromObject: {
+        device: guid,
+        }
+    });
+    return this.http.post(`${this.url}/stream`, data, { responseType: 'text', params: params });
+  }
+
+
 
 }

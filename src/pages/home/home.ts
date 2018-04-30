@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component } from '@angular/core';
 
 import { WindowRefProvider } from '../../providers/window-ref/window-ref';
 import { ApiProvider } from '../../providers/api/api';
@@ -13,6 +13,7 @@ import { AlertController } from 'ionic-angular';
 
 export class HomePage {
 
+  mode: string = 'training';
   on: HTMLAudioElement;
   off: HTMLAudioElement;
   overlay: boolean = false;
@@ -82,7 +83,7 @@ export class HomePage {
       }
 
       this.overlay = Math.abs(dataPoint.acceleration.y) > 8.0;
-      
+
       this.newMotionEvent.next({ ...dataPoint, ...this.currentGyro });
 
     })
@@ -96,7 +97,11 @@ export class HomePage {
   stopRecording() {
     this.off.play();
     this.sub.unsubscribe();
-    this.showRadio();
+    if (this.mode == 'training') {
+      this.showRadio();
+    } else {
+      this.data = [];
+    }
   }
 
   toggleRecording() {
@@ -109,25 +114,48 @@ export class HomePage {
 
   eventCollection() {
     this.sub = this.newMotionEvent.subscribe((event) => {
-      this.data.push(event);
+      if (this.data.length < 2000) { // arbitrary limit on data size, this is over 30 seconds of data which is more than enough
+        this.data.push(event);
+      }
+      if (this.mode == 'guessing') {
+        this.streamToApi();
+      }
     })
   }
 
   sendToApi(classifier: string) {
     this.api.shipIt(this.data, this.deviceID, classifier).subscribe(
       () => {
-        console.log(`successfully posted ${this.data} data points`);
+        console.log(`successfully posted ${this.data.length} data points`);
         this.dataSent += this.data.length;
         this.data = [];
 
       },
       (err) => {
-        // TODO do something with this.
-        this.unsentData.concat(this.data);
-        this.data = [];
+        console.log(JSON.stringify(err));
+        this.data = []; // for now just throw out unsent data
 
       })
   }
+
+  streamToApi() {
+    // devicemotion api reports every 16ms, so collecting 100 data points should take about 1.6 seconds
+    if (this.data.length === 100) {
+      const dataToSend = this.data.splice(0, 99);
+      this.api.streamIt(dataToSend, this.deviceID).subscribe(
+        () => {
+          console.log(`successfully posted ${dataToSend.length} data points`);
+          this.dataSent += dataToSend.length;
+
+        },
+        (err) => {
+          console.log(JSON.stringify(err));
+          this.data = []; // for now just throw out unsent data
+        })
+    }
+  }
+
+
   /**
   * @function _guid
   * @description Creates GUID for user based on several different browser variables
@@ -162,7 +190,7 @@ export class HomePage {
     alert.addInput({
       type: 'radio',
       label: 'Nodding Yes',
-      value: 'no',
+      value: 'yes',
       checked: true
     });
 

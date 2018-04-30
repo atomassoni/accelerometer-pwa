@@ -1,14 +1,19 @@
-<ion-header *ngIf="!overlay">
-  <ion-navbar>
-    <ion-title>
-      Device motion collection
-    </ion-title>
-  </ion-navbar>
-</ion-header>
 
 <ion-content padding>
+    <div>
+        <ion-segment [(ngModel)]="mode">
+          <ion-segment-button value="training">
+            Training
+          </ion-segment-button>
+          <ion-segment-button value="guessing">
+            Guessing
+          </ion-segment-button>
+        </ion-segment>
+      </div>
   <div *ngIf="!overlay">
-  <p > To start recording an event, put the phone on your forehead. Tap anywhere on the screen. You'll hear a sound that indicates recording has started. Nod or shake your head. When you're done, tap the screen again. Answer the question about your movement to send the data.</p>
+  <p *ngIf="mode =='training'"> To start recording an event, put the phone on your forehead. Tap anywhere on the screen. You'll hear a sound that indicates recording has started. Nod or shake your head. When you're done, tap the screen again. Answer the question about your movement to send the data.</p>
+
+  <p *ngIf="mode =='guessing'"> Press the start button to send data to the server and see if the model can guess when you're nodding or shaking your head!</p>  
 
   <button *ngIf="data.length === 0" ion-button (click)="startRecording()" color="dark" outline>start recording</button>
   <button *ngIf="data.length !== 0" ion-button (click)="stopRecording()" color="dark" outline>stop recording</button>

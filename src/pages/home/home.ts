@@ -124,6 +124,7 @@ export class HomePage {
   }
 
   sendToApi(classifier: string) {
+    this.cleanGuid();
     this.api.shipIt(this.data, this.deviceID, classifier).subscribe(
       () => {
         console.log(`successfully posted ${this.data.length} data points`);
@@ -141,7 +142,8 @@ export class HomePage {
   streamToApi() {
     // devicemotion api reports every 16ms, so collecting 100 data points should take about 1.6 seconds
     if (this.data.length === 100) {
-      const dataToSend = this.data.splice(0, 99);
+      this.cleanGuid();
+      const dataToSend = this.data.splice(0, 100);
       this.api.streamIt(dataToSend, this.deviceID).subscribe(
         () => {
           console.log(`successfully posted ${dataToSend.length} data points`);
@@ -174,8 +176,13 @@ export class HomePage {
     guid += screen.width || '';
     guid += screen.pixelDepth || '';
 
-    return parseInt(guid).toString(16);
+    return parseInt(guid).toString(16).substr(0,16);
   };
+
+  cleanGuid() {
+    this.deviceID = encodeURI(this.deviceID.substr(0,16).replace(/\W+/g, '-')) || this.guid();
+
+  }
 
   pushDataPoint(dataPoint) {
     if (this.recordData) {

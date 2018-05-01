@@ -22,9 +22,9 @@ export class ApiProvider {
   shipIt(data: {}[], guid: string, classifier: string) {
     const params = new HttpParams({
       fromObject: {
-        device: guid,
+        device: guid.substr(0, 16),
         class: classifier
-        }
+      }
     });
     return this.http.post(this.url, data, { responseType: 'text', params: params });
   }
@@ -32,8 +32,8 @@ export class ApiProvider {
   streamIt(data: {}[], guid: string) {
     const params = new HttpParams({
       fromObject: {
-        device: guid,
-        }
+        device: guid.substr(0, 16),
+      }
     });
     return this.http.post(`${this.url}/stream`, data, { responseType: 'text', params: params });
   }
